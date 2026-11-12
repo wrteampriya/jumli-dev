@@ -393,4 +393,70 @@ class LocationApiController extends BaseApiController
             return ResponseService::errorResponse(__('Failed to fetch location'));
         }
     }
+
+    /**
+     * Get Country Slugs for Next.js SSR / Routing
+     */
+    public function getCountrySlugs()
+    {
+        try {
+            $countries = Country::where('status', 1)
+                ->whereNotNull('seo_slug')
+                ->select('id', 'name', 'seo_slug', 'iso2', 'default_locale', 'currency_code', 'is_default')
+                ->get();
+
+            return ResponseService::successResponse(__('Country slugs fetched successfully.'), $countries);
+        } catch (\Throwable $th) {
+            ResponseService::logErrorResponse($th, 'API Controller -> getCountrySlugs');
+
+            return ResponseService::errorResponse(__('Failed to fetch country slugs'));
+        }
+    }
+
+    /**
+     * Resolve slug from Seo Slug Registry
+     */
+    public function resolveSlug(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'country_slug' => 'required|string',
+            'slug' => 'required|string',
+            'locale' => 'nullable|string|in:fr,en',
+        ]);
+
+        if ($validator->fails()) {
+            return ResponseService::validationError($validator->errors()->first());
+        }
+
+        try {
+            $country = Country::where('seo_slug', $request->country_slug)->first();
+            if (!$country) {
+                return ResponseService::errorResponse(__('Country not found'), null, 404);
+            }
+
+            $locale = $request->locale ?? $country->default_locale ?? 'fr';
+            $entry = \App\Models\SeoSlugRegistry::where('country_id', $country->id)
+                ->where('locale', $locale)
+                ->where('slug', $request->slug)
+                ->first();
+
+            if (!$entry) {
+                return ResponseService::errorResponse(__('Slug not found in registry'), null, 404);
+            }
+
+            return ResponseService::successResponse(__('Slug resolved successfully.'), [
+                'country_id' => $country->id,
+                'locale' => $locale,
+                'slug' => $entry->slug,
+                'entity_type' => $entry->entity_type,
+                'entity_id' => $entry->entity_id,
+                'level' => $entry->level,
+                'parent_id' => $entry->parent_id,
+            ]);
+        } catch (\Throwable $th) {
+            ResponseService::logErrorResponse($th, 'API Controller -> resolveSlug');
+
+            return ResponseService::errorResponse(__('Failed to resolve slug'));
+        }
+    }
 }

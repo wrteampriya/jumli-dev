@@ -31,7 +31,8 @@ class Category extends Model
         'status',
         'description',
         'is_job_category',
-        'is_featured'
+        'is_featured',
+        'is_indexable',
     ];
 
     protected $appends = ['translated_name'];

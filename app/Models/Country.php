@@ -44,6 +44,10 @@ class Country extends Model
         'flag',
         'wikiDataId',
         'status',
+        'seo_slug',
+        'default_locale',
+        'currency_code',
+        'is_default',
     ];
 
     protected $appends = ['translated_name'];
@@ -89,6 +93,16 @@ class Country extends Model
     public function currency()
     {
         return $this->hasOne(Currency::class);
+    }
+
+    public function locationIndexability()
+    {
+        return $this->hasMany(CountryLocationIndexability::class);
+    }
+
+    public function slugRegistry()
+    {
+        return $this->hasMany(SeoSlugRegistry::class);
     }
 
     /*

@@ -200,6 +200,8 @@ Route::get('get-blog-categories-slug', [BlogApiController::class, 'getBlogCatego
 Route::get('get-popular-blogs', [BlogApiController::class, 'getPopularBlogs']);
 
 /* Location Module */
+Route::get('get-country-slugs', [LocationApiController::class, 'getCountrySlugs']);
+Route::get('resolve-slug', [LocationApiController::class, 'resolveSlug']);
 Route::get('countries', [LocationApiController::class, 'getCountries']);
 Route::get('states', [LocationApiController::class, 'getStates']);
 Route::get('cities', [LocationApiController::class, 'getCities']);
