@@ -1,0 +1,3697 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "eClassify",
+        "version": "2.12.0",
+        "description": "eClassify - Classified Buy & Sell Marketplace API"
+    },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:8000/api"
+        }
+    ],
+    "security": [
+        {
+            "http": []
+        }
+    ],
+    "paths": {
+        "/reset-password": {
+            "post": {
+                "operationId": "authApi.resetPassword",
+                "tags": [
+                    "Authentication",
+                    "AuthApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "number": {
+                                        "type": "string"
+                                    },
+                                    "country_code": {
+                                        "type": "string"
+                                    },
+                                    "new_password": {
+                                        "type": "string",
+                                        "minLength": 6
+                                    }
+                                },
+                                "required": [
+                                    "number",
+                                    "country_code",
+                                    "new_password"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/logout": {
+            "post": {
+                "operationId": "authApi.logout",
+                "tags": [
+                    "Authentication",
+                    "AuthApi"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "fcm_token": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/delete-user": {
+            "delete": {
+                "operationId": "authApi.deleteUser",
+                "tags": [
+                    "Authentication",
+                    "AuthApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/user-signup": {
+            "post": {
+                "operationId": "authApi.userSignup",
+                "summary": "User Signup",
+                "tags": [
+                    "Authentication",
+                    "AuthApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "email",
+                                            "google",
+                                            "phone",
+                                            "apple"
+                                        ]
+                                    },
+                                    "firebase_id": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "flag": {
+                                        "type": "boolean"
+                                    },
+                                    "platform_type": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "enum": [
+                                            "android",
+                                            "ios"
+                                        ]
+                                    },
+                                    "region_code": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "country_code": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "mobile": {
+                                        "type": "string"
+                                    },
+                                    "password": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "minLength": 6
+                                    },
+                                    "is_login": {
+                                        "type": "boolean"
+                                    },
+                                    "referral_code": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "type"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/user-exists": {
+            "get": {
+                "operationId": "authApi.userExists",
+                "tags": [
+                    "Authentication",
+                    "AuthApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "mobile",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "country_code",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "forgot_password",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/get-otp": {
+            "get": {
+                "operationId": "authApi.getOtp",
+                "tags": [
+                    "Authentication",
+                    "AuthApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "country_code",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 5
+                        }
+                    },
+                    {
+                        "name": "number",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/verify-otp": {
+            "get": {
+                "operationId": "authApi.verifyOtp",
+                "tags": [
+                    "Authentication",
+                    "AuthApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "number",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "country_code",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "otp",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "number"
+                        }
+                    },
+                    {
+                        "name": "password",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "minLength": 6
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/blogs": {
+            "get": {
+                "operationId": "blogApi.getBlog",
+                "summary": "Get Blogs",
+                "tags": [
+                    "Blog",
+                    "BlogApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "blog_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "new-to-old",
+                                "old-to-new",
+                                "popular"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "views",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/blog-tags": {
+            "get": {
+                "operationId": "blogApi.getAllBlogTags",
+                "summary": "Get All Blog Tags",
+                "tags": [
+                    "Blog",
+                    "BlogApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/get-blogs-slug": {
+            "get": {
+                "operationId": "blogApi.getBlogsSlug",
+                "summary": "Get Blogs Slug",
+                "tags": [
+                    "Blog",
+                    "BlogApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/get-parent-categories": {
+            "get": {
+                "operationId": "categoryApi.getParentCategoryTree",
+                "summary": "Get Parent Category Tree",
+                "tags": [
+                    "Category",
+                    "CategoryApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "child_category_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "tree",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "slug",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/get-categories": {
+            "get": {
+                "operationId": "categoryApi.getSubCategories",
+                "summary": "Get Sub Categories",
+                "tags": [
+                    "Category",
+                    "CategoryApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "listing",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "0",
+                                "1"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/get-categories-demo": {
+            "get": {
+                "operationId": "categoryApi.getCategories",
+                "summary": "Get Categories",
+                "tags": [
+                    "Category",
+                    "CategoryApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "language_code",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/get-categories-slug": {
+            "get": {
+                "operationId": "categoryApi.getCategoriesSlug",
+                "summary": "Get Categories Slug",
+                "tags": [
+                    "Category",
+                    "CategoryApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/get-customfields": {
+            "get": {
+                "operationId": "categoryApi.getCustomFields",
+                "summary": "Get Custom Fields",
+                "tags": [
+                    "Category",
+                    "CategoryApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "filter",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "default": false
+                        }
+                    },
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/item-offer": {
+            "post": {
+                "operationId": "chatApi.createItemOffer",
+                "summary": "Create Item Offer",
+                "tags": [
+                    "Chat",
+                    "ChatApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "item_id": {
+                                        "type": "integer"
+                                    },
+                                    "amount": {
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "item_id"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/item-offer-list": {
+            "get": {
+                "operationId": "chatApi.getItemOfferList",
+                "summary": "Get Item Offer List",
+                "tags": [
+                    "Chat",
+                    "ChatApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "seller",
+                                "buyer"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/chat-list": {
+            "get": {
+                "operationId": "chatApi.getChatList",
+                "summary": "Get Chat List",
+                "tags": [
+                    "Chat",
+                    "ChatApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "seller",
+                                "buyer"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "item_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/send-message": {
+            "post": {
+                "operationId": "chatApi.sendMessage",
+                "summary": "Send Message",
+                "tags": [
+                    "Chat",
+                    "ChatApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "item_offer_id": {
+                                        "type": "integer"
+                                    },
+                                    "message": {
+                                        "type": "string"
+                                    },
+                                    "file": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "maxLength": 7168
+                                    },
+                                    "audio": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "maxLength": 7168
+                                    }
+                                },
+                                "required": [
+                                    "item_offer_id",
+                                    "message"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/chat-messages": {
+            "get": {
+                "operationId": "chatApi.getChatMessages",
+                "summary": "Get Chat Messages",
+                "tags": [
+                    "Chat",
+                    "ChatApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "item_offer_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/delete-chat": {
+            "post": {
+                "operationId": "chatApi.deleteChat",
+                "summary": "Delete Chat",
+                "tags": [
+                    "Chat",
+                    "ChatApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "item_offer_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": [
+                                    "item_offer_id"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/delete-chat-messages": {
+            "post": {
+                "operationId": "chatApi.deleteChatMessages",
+                "summary": "Delete Chat Messages",
+                "tags": [
+                    "Chat",
+                    "ChatApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "item_offer_id": {
+                                        "type": "integer"
+                                    },
+                                    "message_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "minItems": 1
+                                    }
+                                },
+                                "required": [
+                                    "item_offer_id",
+                                    "message_ids"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/get-featured-section": {
+            "get": {
+                "operationId": "featuredSectionApi.getFeaturedSection",
+                "summary": "Get Featured Section",
+                "tags": [
+                    "Featured Section",
+                    "FeaturedSectionApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/get-featured-section-slug": {
+            "get": {
+                "operationId": "featuredSectionApi.getFeatureSectionSlug",
+                "summary": "Get Featured Section Slug",
+                "tags": [
+                    "Featured Section",
+                    "FeaturedSectionApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/get-featured-categories": {
+            "get": {
+                "operationId": "featuredSectionApi.getFeaturedCategories",
+                "summary": "Get Featured Categories",
+                "tags": [
+                    "Featured Section",
+                    "FeaturedSectionApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/my-items": {
+            "get": {
+                "operationId": "itemApi.getItem_0",
+                "summary": "Get Items",
+                "tags": [
+                    "Item",
+                    "ItemApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "custom_fields",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "slug",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "user_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "min_price",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "max_price",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "new-to-old",
+                                "old-to-new",
+                                "price-high-to-low",
+                                "price-low-to-high",
+                                "popular_items"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "posted_since",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "all-time",
+                                "today",
+                                "within-1-week",
+                                "within-2-week",
+                                "within-1-month",
+                                "within-3-month"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "current_page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/add-item": {
+            "post": {
+                "operationId": "itemApi.addItem",
+                "summary": "Add Item",
+                "tags": [
+                    "Item",
+                    "ItemApi"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "translations": {
+                                        "type": "string",
+                                        "default": "{}"
+                                    },
+                                    "all_category_ids": {
+                                        "type": "string",
+                                        "description": "Get all_category_ids from request (should contain category and all parent categories)"
+                                    },
+                                    "custom_field_translations": {
+                                        "type": "string"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/update-item": {
+            "post": {
+                "operationId": "itemApi.updateItem",
+                "summary": "Update Item",
+                "tags": [
+                    "Item",
+                    "ItemApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "slug": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "pattern": "^(?!-)(?!.*--)(?!.*-$)(?!-$)[a-z0-9-]+$"
+                                    },
+                                    "price": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "description": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "latitude": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "longitude": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "address": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "contact": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "image": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "maxLength": 7168
+                                    },
+                                    "custom_fields": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "gallery_images": {
+                                        "type": [
+                                            "array",
+                                            "null"
+                                        ],
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "currency_id": {
+                                        "type": [
+                                            "integer",
+                                            "null"
+                                        ]
+                                    },
+                                    "country_code": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "translations": {
+                                        "type": "string",
+                                        "default": "{}"
+                                    },
+                                    "custom_field_translations": {
+                                        "type": "string"
+                                    },
+                                    "custom_field_files": {
+                                        "type": [
+                                            "array",
+                                            "null"
+                                        ],
+                                        "items": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ],
+                                            "maxLength": 7168
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "id"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/delete-item": {
+            "post": {
+                "operationId": "itemApi.deleteItem",
+                "summary": "Delete Item",
+                "tags": [
+                    "Item",
+                    "ItemApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/update-item-status": {
+            "post": {
+                "operationId": "itemApi.updateItemStatus",
+                "summary": "Update Item Status",
+                "tags": [
+                    "Item",
+                    "ItemApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "item_id": {
+                                        "type": "integer"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "sold out",
+                                            "inactive",
+                                            "active",
+                                            "resubmitted"
+                                        ]
+                                    },
+                                    "sold_to": {
+                                        "type": [
+                                            "integer",
+                                            "null"
+                                        ],
+                                        "description": "'sold_to' => 'required_if:status,==,sold out|integer'"
+                                    }
+                                },
+                                "required": [
+                                    "item_id",
+                                    "status"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/item-buyer-list": {
+            "get": {
+                "operationId": "itemApi.getItemBuyerList",
+                "summary": "Get Item Buyer List",
+                "tags": [
+                    "Item",
+                    "ItemApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "item_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/renew-item": {
+            "post": {
+                "operationId": "itemApi.renewItem",
+                "summary": "Renew Item",
+                "tags": [
+                    "Item",
+                    "ItemApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/make-item-featured": {
+            "post": {
+                "operationId": "itemApi.makeFeaturedItem",
+                "summary": "Make Item Featured",
+                "tags": [
+                    "Item",
+                    "ItemApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "item_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": [
+                                    "item_id"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/manage-favourite": {
+            "post": {
+                "operationId": "itemApi.manageFavourite",
+                "summary": "Manage Favourite",
+                "tags": [
+                    "Item",
+                    "ItemApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "item_id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "item_id"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/get-favourite-item": {
+            "get": {
+                "operationId": "itemApi.getFavouriteItem",
+                "summary": "Get Favourite Items",
+                "tags": [
+                    "Item",
+                    "ItemApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/get-limits": {
+            "get": {
+                "operationId": "itemApi.getLimits",
+                "summary": "Get Limits",
+                "tags": [
+                    "Item",
+                    "ItemApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "package_type",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "item_listing",
+                                "advertisement"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Return multiple items response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/get-item": {
+            "get": {
+                "operationId": "itemApi.getItem_0",
+                "summary": "Get Items",
+                "tags": [
+                    "Item",
+                    "ItemApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "offset",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "custom_fields",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "slug",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "user_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "min_price",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "max_price",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "new-to-old",
+                                "old-to-new",
+                                "price-high-to-low",
+                                "price-low-to-high",
+                                "popular_items"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "posted_since",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "all-time",
+                                "today",
+                                "within-1-week",
+                                "within-2-week",
+                                "within-1-month",
+                                "within-3-month"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "current_page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/set-item-total-click": {
+            "post": {
+                "operationId": "itemApi.setItemTotalClick",
+                "summary": "Set Item Total Click",
+                "tags": [
+                    "Item",
+                    "ItemApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "item_id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "item_id"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/get-item-slug": {
+            "get": {
+                "operationId": "itemApi.getItemSlugs",
+                "summary": "Get Item Slugs",
+                "tags": [
+                    "Item",
+                    "ItemApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/job-apply": {
+            "post": {
+                "operationId": "jobApi.applyJob",
+                "summary": "Apply Job",
+                "tags": [
+                    "Job",
+                    "JobApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "item_id": {
+                                        "type": "string"
+                                    },
+                                    "full_name": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "maxLength": 255
+                                    },
+                                    "mobile": {
+                                        "type": "string",
+                                        "maxLength": 20
+                                    },
+                                    "resume": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "format": "binary",
+                                        "contentMediaType": "application/octet-stream",
+                                        "maxLength": 7168
+                                    }
+                                },
+                                "required": [
+                                    "item_id",
+                                    "full_name",
+                                    "email",
+                                    "mobile"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/get-job-applications": {
+            "get": {
+                "operationId": "jobApi.recruiterApplications",
+                "summary": "Get Recruiter Applications",
+                "tags": [
+                    "Job",
+                    "JobApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "item_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/my-job-applications": {
+            "get": {
+                "operationId": "jobApi.myJobApplications",
+                "summary": "Get My Job Applications",
+                "tags": [
+                    "Job",
+                    "JobApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "item_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/update-job-applications-status": {
+            "post": {
+                "operationId": "jobApi.updateJobStatus",
+                "summary": "Update Job Application Status",
+                "tags": [
+                    "Job",
+                    "JobApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "job_id": {
+                                        "type": "integer"
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "accepted",
+                                            "rejected"
+                                        ]
+                                    }
+                                },
+                                "required": [
+                                    "job_id",
+                                    "status"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/countries": {
+            "get": {
+                "operationId": "locationApi.getCountries",
+                "summary": "Get Countries",
+                "tags": [
+                    "Location",
+                    "LocationApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/states": {
+            "get": {
+                "operationId": "locationApi.getStates",
+                "summary": "Get States",
+                "tags": [
+                    "Location",
+                    "LocationApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "country_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/cities": {
+            "get": {
+                "operationId": "locationApi.getCities",
+                "summary": "Get Cities",
+                "tags": [
+                    "Location",
+                    "LocationApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "state_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/areas": {
+            "get": {
+                "operationId": "locationApi.getAreas",
+                "summary": "Get Areas",
+                "tags": [
+                    "Location",
+                    "LocationApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "city_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/get-location": {
+            "get": {
+                "operationId": "locationApi.getLocationFromCoordinates",
+                "summary": "Get Location From Coordinates",
+                "tags": [
+                    "Location",
+                    "LocationApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "lat",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "number",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "lng",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "number",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "lang",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "place_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "session_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/assign-free-package": {
+            "post": {
+                "operationId": "packageApi.assignFreePackage",
+                "summary": "Assign Free Package",
+                "tags": [
+                    "Package",
+                    "PackageApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "package_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": [
+                                    "package_id"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/get-package": {
+            "get": {
+                "operationId": "packageApi.getPackage",
+                "summary": "Get Package",
+                "tags": [
+                    "Package",
+                    "PackageApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "category_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "platform",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "android",
+                                "ios"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "advertisement",
+                                "item_listing"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "is_subscribed",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/app-payment-status": {
+            "get": {
+                "operationId": "packageApi.appPaymentStatus",
+                "summary": "App Payment Status",
+                "tags": [
+                    "Package",
+                    "PackageApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/get-payment-settings": {
+            "get": {
+                "operationId": "paymentApi.getPaymentSettings",
+                "summary": "Get Payment Settings",
+                "tags": [
+                    "Payment",
+                    "PaymentApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/payment-intent": {
+            "post": {
+                "operationId": "paymentApi.getPaymentIntent",
+                "summary": "Get Payment Intent",
+                "tags": [
+                    "Payment",
+                    "PaymentApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "package_id": {
+                                        "type": "string"
+                                    },
+                                    "payment_method": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Stripe",
+                                            "Razorpay",
+                                            "Paystack",
+                                            "Paytabs",
+                                            "PhonePe",
+                                            "FlutterWave",
+                                            "bankTransfer",
+                                            "PayPal",
+                                            "DPO"
+                                        ]
+                                    },
+                                    "platform_type": {
+                                        "type": "string"
+                                    },
+                                    "refer_points_used": {
+                                        "type": [
+                                            "integer",
+                                            "null"
+                                        ],
+                                        "minimum": 0
+                                    }
+                                },
+                                "required": [
+                                    "package_id",
+                                    "payment_method"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/payment-transactions": {
+            "get": {
+                "operationId": "paymentApi.getPaymentTransactions",
+                "summary": "Get Payment Transactions",
+                "tags": [
+                    "Payment",
+                    "PaymentApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "latest_only",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "boolean",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/in-app-purchase": {
+            "post": {
+                "operationId": "paymentApi.inAppPurchase",
+                "summary": "In-App Purchase",
+                "tags": [
+                    "Payment",
+                    "PaymentApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "purchase_token": {
+                                        "type": "string"
+                                    },
+                                    "payment_method": {
+                                        "type": "string",
+                                        "enum": [
+                                            "google",
+                                            "apple"
+                                        ]
+                                    },
+                                    "package_id": {
+                                        "type": "integer"
+                                    },
+                                    "refer_points_used": {
+                                        "type": [
+                                            "integer",
+                                            "null"
+                                        ],
+                                        "minimum": 0
+                                    }
+                                },
+                                "required": [
+                                    "purchase_token",
+                                    "payment_method",
+                                    "package_id"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/bank-transfer-update": {
+            "post": {
+                "operationId": "paymentApi.bankTransferUpdate",
+                "summary": "Bank Transfer Update",
+                "tags": [
+                    "Payment",
+                    "PaymentApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "payment_transection_id": {
+                                        "type": "integer"
+                                    },
+                                    "payment_receipt": {
+                                        "type": "string",
+                                        "format": "binary",
+                                        "contentMediaType": "application/octet-stream",
+                                        "maxLength": 7048
+                                    }
+                                },
+                                "required": [
+                                    "payment_transection_id",
+                                    "payment_receipt"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/refer-points-balance": {
+            "get": {
+                "operationId": "referralApi.getReferPointsBalance",
+                "summary": "Get Refer Points Balance",
+                "tags": [
+                    "Referral",
+                    "ReferralApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/refer-points-history": {
+            "get": {
+                "operationId": "referralApi.getReferPointsHistory",
+                "summary": "Get Refer Points History",
+                "tags": [
+                    "Referral",
+                    "ReferralApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/referral-code": {
+            "get": {
+                "operationId": "referralApi.getReferralCode",
+                "summary": "Get Referral Code",
+                "tags": [
+                    "Referral",
+                    "ReferralApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/add-item-review": {
+            "post": {
+                "operationId": "reviewApi.addItemReview",
+                "summary": "Add Item Review",
+                "tags": [
+                    "Review",
+                    "ReviewApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "review": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "ratings": {
+                                        "type": "number",
+                                        "minimum": 0,
+                                        "maximum": 5
+                                    },
+                                    "item_id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "ratings",
+                                    "item_id"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/my-review": {
+            "get": {
+                "operationId": "reviewApi.getMyReview",
+                "summary": "Get My Reviews",
+                "tags": [
+                    "Review",
+                    "ReviewApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/add-review-report": {
+            "post": {
+                "operationId": "reviewApi.addReviewReport",
+                "summary": "Add Review Report",
+                "tags": [
+                    "Review",
+                    "ReviewApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "report_reason": {
+                                        "type": "string"
+                                    },
+                                    "seller_review_id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "report_reason",
+                                    "seller_review_id"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/add-reports": {
+            "post": {
+                "operationId": "settingsApi.addReports",
+                "summary": "Add Reports",
+                "tags": [
+                    "Settings",
+                    "SettingsApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "item_id": {
+                                        "type": "string"
+                                    },
+                                    "report_reason_id": {
+                                        "type": "string"
+                                    },
+                                    "other_message": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "item_id"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/get-system-settings": {
+            "get": {
+                "operationId": "settingsApi.getSystemSettings",
+                "summary": "Get System Settings",
+                "tags": [
+                    "Settings",
+                    "SettingsApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/seo-settings": {
+            "get": {
+                "operationId": "settingsApi.seoSettings",
+                "summary": "Get SEO Settings",
+                "tags": [
+                    "Settings",
+                    "SettingsApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/get-currencies": {
+            "get": {
+                "operationId": "settingsApi.getCurrencies",
+                "summary": "Get Currencies",
+                "tags": [
+                    "Settings",
+                    "SettingsApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "country",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/get-languages": {
+            "get": {
+                "operationId": "settingsApi.getLanguages",
+                "summary": "Get Languages",
+                "tags": [
+                    "Settings",
+                    "SettingsApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "language_code",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "enum": [
+                                "app",
+                                "web"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/get-slider": {
+            "get": {
+                "operationId": "settingsApi.getSlider",
+                "summary": "Get Slider",
+                "tags": [
+                    "Settings",
+                    "SettingsApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "country",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "state",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "city",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/get-report-reasons": {
+            "get": {
+                "operationId": "settingsApi.getReportReasons",
+                "summary": "Get Report Reasons",
+                "tags": [
+                    "Settings",
+                    "SettingsApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/faq": {
+            "get": {
+                "operationId": "settingsApi.getFaqs",
+                "summary": "Get FAQs",
+                "tags": [
+                    "Settings",
+                    "SettingsApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/tips": {
+            "get": {
+                "operationId": "settingsApi.getTips",
+                "summary": "Get Tips",
+                "tags": [
+                    "Settings",
+                    "SettingsApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/contact-us": {
+            "post": {
+                "operationId": "settingsApi.storeContactUs",
+                "summary": "Store Contact Us",
+                "tags": [
+                    "Settings",
+                    "SettingsApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "subject": {
+                                        "type": "string"
+                                    },
+                                    "message": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "subject",
+                                    "message"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/block-user": {
+            "post": {
+                "operationId": "socialApi.blockUser",
+                "summary": "Block User",
+                "tags": [
+                    "Social",
+                    "SocialApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "blocked_user_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": [
+                                    "blocked_user_id"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/unblock-user": {
+            "post": {
+                "operationId": "socialApi.unblockUser",
+                "summary": "Unblock User",
+                "tags": [
+                    "Social",
+                    "SocialApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "blocked_user_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": [
+                                    "blocked_user_id"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/blocked-users": {
+            "get": {
+                "operationId": "socialApi.getBlockedUsers",
+                "summary": "Get Blocked Users",
+                "tags": [
+                    "Social",
+                    "SocialApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/follow-user": {
+            "post": {
+                "operationId": "socialApi.followUser",
+                "summary": "Follow User",
+                "tags": [
+                    "Social",
+                    "SocialApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": [
+                                    "user_id"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/unfollow-user": {
+            "post": {
+                "operationId": "socialApi.unfollowUser",
+                "summary": "Unfollow User",
+                "tags": [
+                    "Social",
+                    "SocialApi"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": [
+                                    "user_id"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/followers": {
+            "get": {
+                "operationId": "socialApi.getFollowers",
+                "summary": "Get Followers",
+                "tags": [
+                    "Social",
+                    "SocialApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "user_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/following": {
+            "get": {
+                "operationId": "socialApi.getFollowing",
+                "summary": "Get Following",
+                "tags": [
+                    "Social",
+                    "SocialApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "user_id",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "integer",
+                                "null"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "schema": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    }
+                }
+            }
+        },
+        "/update-profile": {
+            "post": {
+                "operationId": "userApi.updateProfile",
+                "summary": "Update Profile",
+                "tags": [
+                    "User",
+                    "UserApi"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "profile": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "maxLength": 7168
+                                    },
+                                    "email": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "format": "email"
+                                    },
+                                    "mobile": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "fcm_id": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "address": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "show_personal_details": {
+                                        "type": "boolean"
+                                    },
+                                    "country_code": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "region_code": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/get-user-info": {
+            "get": {
+                "operationId": "userApi.getUser",
+                "summary": "Get User Info",
+                "tags": [
+                    "User",
+                    "UserApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/get-notification-list": {
+            "get": {
+                "operationId": "userApi.getNotificationList",
+                "summary": "Get Notification List",
+                "tags": [
+                    "User",
+                    "UserApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/get-seller": {
+            "get": {
+                "operationId": "userApi.getSeller",
+                "summary": "Get Seller Details",
+                "tags": [
+                    "User",
+                    "UserApi"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            }
+        },
+        "/get-seller-slug": {
+            "get": {
+                "operationId": "userApi.getSellerSlug",
+                "summary": "Get Seller Slugs",
+                "tags": [
+                    "User",
+                    "UserApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/verification-fields": {
+            "get": {
+                "operationId": "verificationApi.getVerificationFields",
+                "summary": "Get Verification Fields",
+                "tags": [
+                    "Verification",
+                    "VerificationApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/send-verification-request": {
+            "post": {
+                "operationId": "verificationApi.sendVerificationRequest",
+                "summary": "Send Verification Request",
+                "tags": [
+                    "Verification",
+                    "VerificationApi"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "verification_field_translations": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "verification_field": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "verification_field_files": {
+                                        "type": [
+                                            "array",
+                                            "null"
+                                        ],
+                                        "items": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ],
+                                            "maxLength": 7168
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/verification-request": {
+            "get": {
+                "operationId": "verificationApi.getVerificationRequest",
+                "summary": "Get Verification Request",
+                "tags": [
+                    "Verification",
+                    "VerificationApi"
+                ],
+                "responses": {
+                    "200": {
+                        "description": ""
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "http": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "bearerAuth"
+            }
+        },
+        "responses": {
+            "AuthenticationException": {
+                "description": "Unauthenticated",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error overview."
+                                }
+                            },
+                            "required": [
+                                "message"
+                            ]
+                        }
+                    }
+                }
+            },
+            "ValidationException": {
+                "description": "Validation error",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Errors overview."
+                                },
+                                "errors": {
+                                    "type": "object",
+                                    "description": "A detailed description of each field that failed validation.",
+                                    "additionalProperties": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            },
+                            "required": [
+                                "message",
+                                "errors"
+                            ]
+                        }
+                    }
+                }
+            },
+            "ModelNotFoundException": {
+                "description": "Not found",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "message": {
+                                    "type": "string",
+                                    "description": "Error overview."
+                                }
+                            },
+                            "required": [
+                                "message"
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
