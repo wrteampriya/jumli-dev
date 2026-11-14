@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| API Routes
+| API Routes 
 |--------------------------------------------------------------------------
 |
 | Here is where you can register API routes for your application. These
@@ -36,6 +36,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 /* Authenticated Routes */
+
 Route::group(['middleware' => ['auth:sanctum']], static function () {
 
     /* Auth Module */
@@ -202,6 +203,10 @@ Route::get('get-popular-blogs', [BlogApiController::class, 'getPopularBlogs']);
 /* Location Module */
 Route::get('get-country-slugs', [LocationApiController::class, 'getCountrySlugs']);
 Route::get('resolve-slug', [LocationApiController::class, 'resolveSlug']);
+
+Route::post('seo/resolve-path', [LocationApiController::class, 'resolveSeoPath']);
+Route::get('seo/combination-listings', [LocationApiController::class, 'getCombinationListings']);
+Route::get('seo/resolve-redirect', [LocationApiController::class, 'resolveRedirect']);
 Route::get('countries', [LocationApiController::class, 'getCountries']);
 Route::get('states', [LocationApiController::class, 'getStates']);
 Route::get('cities', [LocationApiController::class, 'getCities']);

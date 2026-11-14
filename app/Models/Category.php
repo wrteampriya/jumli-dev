@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Facades\Storage;
 use Staudenmeir\LaravelAdjacencyList\Eloquent\HasRecursiveRelationships;
 use App\Services\Module\ModuleService;
+use App\Services\SeoTaxonomyService;
 
 class Category extends Model
 {
@@ -71,6 +72,7 @@ class Category extends Model
             }
 
             ModuleService::clearCategoryIds($model->module_id);
+            SeoTaxonomyService::deleteCategory($model->id);
         });
 
         static::saving(function ($model) {
@@ -119,6 +121,9 @@ class Category extends Model
                     $child->cascadePathToDescendants();
                 });
             }
+
+            // Auto-sync category slugs and SEO registry
+            SeoTaxonomyService::syncCategory($model);
         });
     }
 

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class SystemIntegrityService
 {
-    
+
     private const INTERVAL = 10080;
     private const SK = 'X3NyaV90cw=='; // '_sri_ts'
     private const DOWN_KEY = '_sri_down';
@@ -21,7 +21,7 @@ class SystemIntegrityService
      * Main entry point for the integrity check.
      * Tiered: Session -> Database -> API
      */
-  
+
     public static function check(): bool
     {
         try {
@@ -135,7 +135,6 @@ class SystemIntegrityService
             }
 
             return self::handleResponse($resp, $code, $cfg, $domain);
-
         } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
             throw $e;
         } catch (\Throwable $e) {

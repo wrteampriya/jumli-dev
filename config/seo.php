@@ -31,4 +31,12 @@ return [
         'annonce',
         'listing',
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | SEO Redirects Feature Flag
+    |--------------------------------------------------------------------------
+    | Toggle dynamic SEO redirect resolver on/off safely.
+    */
+    'redirects_enabled' => env('SEO_REDIRECTS_ENABLED', true),
 ];

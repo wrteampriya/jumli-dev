@@ -11,6 +11,10 @@ use App\Models\Setting;
 use App\Models\State;
 use App\Services\ResponseService;
 use Illuminate\Http\Request;
+use App\Models\Item;
+use App\Models\Category;
+use App\Services\SeoTaxonomyService;
+use App\Services\SeoRedirectService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 use Throwable;
@@ -31,7 +35,7 @@ class LocationApiController extends BaseApiController
                             $q->where('key', 'name')->whereLike('value', "%{$searchQuery}%");
                         });
                 })
-                ->with(['translations.language:id,code'])
+                ->with(['translations.language:id,code', 'locationIndexability'])
                 ->orderBy('name', 'ASC')
                 ->paginate();
 
@@ -51,6 +55,14 @@ class LocationApiController extends BaseApiController
                 } else {
                     $country->translations = [];
                 }
+
+                // Attach location indexability flags for frontend SEO router
+                $indexability = $country->locationIndexability ?? collect();
+                $country->location_indexability = [
+                    'region' => (bool) ($indexability->where('level', 'region')->first()->is_indexable ?? true),
+                    'department' => (bool) ($indexability->where('level', 'department')->first()->is_indexable ?? false),
+                    'city' => (bool) ($indexability->where('level', 'city')->first()->is_indexable ?? true),
+                ];
 
                 return $country;
             });
@@ -86,6 +98,20 @@ class LocationApiController extends BaseApiController
             }
 
             $states = $statesQuery->paginate($request->input('per_page', 15));
+
+            $states->getCollection()->transform(function ($state) {
+                $slugs = \App\Models\TaxonomySlug::where('entity_type', 'state')
+                    ->where('entity_id', $state->id)
+                    ->pluck('slug', 'locale')
+                    ->toArray();
+
+                $state->slug = $slugs['fr'] ?? $slugs['en'] ?? \Illuminate\Support\Str::slug($state->name);
+                $state->slugs = [
+                    'fr' => $slugs['fr'] ?? \Illuminate\Support\Str::slug($state->name),
+                    'en' => $slugs['en'] ?? \Illuminate\Support\Str::slug($state->name),
+                ];
+                return $state;
+            });
 
             ResponseService::successResponse(__('States Fetched Successfully'), $states);
         } catch (Throwable $th) {
@@ -128,6 +154,20 @@ class LocationApiController extends BaseApiController
             }
 
             $cities = $citiesQuery->paginate($request->input('per_page', 15));
+
+            $cities->getCollection()->transform(function ($city) {
+                $slugs = \App\Models\TaxonomySlug::where('entity_type', 'city')
+                    ->where('entity_id', $city->id)
+                    ->pluck('slug', 'locale')
+                    ->toArray();
+
+                $city->slug = $slugs['fr'] ?? $slugs['en'] ?? \Illuminate\Support\Str::slug($city->name);
+                $city->slugs = [
+                    'fr' => $slugs['fr'] ?? \Illuminate\Support\Str::slug($city->name),
+                    'en' => $slugs['en'] ?? \Illuminate\Support\Str::slug($city->name),
+                ];
+                return $city;
+            });
 
             return ResponseService::successResponse(__('Cities Fetched Successfully'), $cities);
         } catch (\Throwable $th) {
@@ -457,6 +497,130 @@ class LocationApiController extends BaseApiController
             ResponseService::logErrorResponse($th, 'API Controller -> resolveSlug');
 
             return ResponseService::errorResponse(__('Failed to resolve slug'));
+        }
+    }
+
+    /**
+     * Validate full URL path segments for Next.js SSR router
+     */
+    public function resolveSeoPath(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'country_slug' => 'required|string',
+            'path' => 'nullable|array',
+            'path.*' => 'string',
+            'locale' => 'nullable|string|in:fr,en',
+        ]);
+
+        if ($validator->fails()) {
+            return ResponseService::validationError($validator->errors()->first());
+        }
+
+        try {
+            $countrySlug = $request->input('country_slug');
+            $segments = $request->input('path', []);
+            $locale = $request->input('locale', 'fr');
+
+            $result = SeoTaxonomyService::resolvePath($countrySlug, $segments, $locale);
+
+            if ($result['status'] === 404) {
+                return ResponseService::errorResponse($result['error'] ?? __('Page not found'), null, 404);
+            }
+
+            return ResponseService::successResponse(__('Path resolved successfully.'), $result);
+        } catch (\Throwable $th) {
+            ResponseService::logErrorResponse($th, 'LocationApiController -> resolveSeoPath');
+
+            return ResponseService::errorResponse(__('Failed to resolve path'));
+        }
+    }
+
+    /**
+     * Fetch ads for a specific Country x Location x Category combination
+     */
+    public function getCombinationListings(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'country_id' => 'required|integer',
+            'location_id' => 'nullable|integer',
+            'location_level' => 'nullable|integer|in:1,2,3',
+            'category_id' => 'nullable|integer',
+            'page' => 'nullable|integer',
+            'per_page' => 'nullable|integer|max:48',
+        ]);
+
+        if ($validator->fails()) {
+            return ResponseService::validationError($validator->errors()->first());
+        }
+
+        try {
+            $countryId = $request->input('country_id');
+            $locationId = $request->input('location_id');
+            $locationLevel = (int)$request->input('location_level');
+            $categoryId = $request->input('category_id');
+            $perPage = (int)$request->input('per_page', 16);
+
+            $query = Item::approved()
+                ->getNonExpiredItems()
+                ->with(['gallery_images', 'category:id,name,slug', 'area']);
+
+            // 1. Country filter
+            // Note: items table links to countries via area_id -> areas.country_id
+            $query->whereHas('area', function ($areaQuery) use ($countryId) {
+                $areaQuery->where('country_id', $countryId);
+            });
+
+            // 2. Location filter with descendant matching (Annex H rule)
+            if ($locationId) {
+                if ($locationLevel === 1) {
+                    // Region / State: match all areas of that state
+                    $query->whereHas('area', fn($q) => $q->where('state_id', $locationId));
+                } elseif ($locationLevel === 3) {
+                    // City: match all areas of that city
+                    $query->whereHas('area', fn($q) => $q->where('city_id', $locationId));
+                }
+            }
+
+            // 3. Category filter with descendant matching (Annex H rule)
+            if ($categoryId) {
+                $category = Category::find($categoryId);
+                $categoryIds = $category ? $category->descendantsAndSelf()->pluck('id')->toArray() : [$categoryId];
+                $query->whereIn('category_id', $categoryIds);
+            }
+
+            $listings = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+            return ResponseService::successResponse(__('Combination listings fetched successfully.'), $listings);
+        } catch (\Throwable $th) {
+            ResponseService::logErrorResponse($th, 'LocationApiController -> getCombinationListings');
+
+            return ResponseService::errorResponse(__('Failed to fetch combination listings'));
+        }
+    }
+
+    /**
+     * Resolve legacy URL to new single-hop SEO destination for Next.js SSR
+     */
+    public function resolveRedirect(Request $request)
+    {
+        $path = $request->query('path');
+        if (!$path) {
+            return ResponseService::validationError(__('Path parameter is required'));
+        }
+
+        try {
+            $queryParams = $request->except(['path']);
+            $result = SeoRedirectService::resolve($path, $queryParams);
+
+            if (!$result) {
+                return ResponseService::errorResponse(__('No redirect rule found'), null, 404);
+            }
+
+            return ResponseService::successResponse(__('Redirect resolved successfully.'), $result);
+        } catch (\Throwable $th) {
+            ResponseService::logErrorResponse($th, 'LocationApiController -> resolveRedirect');
+
+            return ResponseService::errorResponse(__('Failed to resolve redirect'));
         }
     }
 }

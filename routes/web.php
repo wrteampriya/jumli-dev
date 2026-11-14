@@ -31,6 +31,7 @@ use App\Http\Controllers\ReportReasonController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SellerController;
 use App\Http\Controllers\SeoSettingController;
+use App\Http\Controllers\Admin\SeoRedirectController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SliderController;
 use App\Http\Controllers\StaffController;
@@ -429,6 +430,15 @@ Route::group(['middleware' => ['auth', 'language']], static function () {
     /*** Language Module : END ***/
 
     Route::resource('seo-setting', SeoSettingController::class);
+
+    /*** SEO Redirects Module : START ***/
+    Route::group(['prefix' => 'seo-redirects', 'as' => 'seo-redirects.'], static function () {
+        Route::get('show', [SeoRedirectController::class, 'show'])->name('show');
+        Route::post('store', [SeoRedirectController::class, 'store'])->name('store');
+        Route::delete('{id}', [SeoRedirectController::class, 'destroy'])->name('destroy');
+        Route::get('export-audit-csv', [SeoRedirectController::class, 'exportAuditCsv'])->name('export-audit-csv');
+    });
+    /*** SEO Redirects Module : END ***/
 
     /*** User Module : START ***/
     Route::group(['prefix' => 'staff'], static function () {

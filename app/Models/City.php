@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\ManageTranslations;
+use App\Services\SeoTaxonomyService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -43,6 +44,23 @@ class City extends Model {
             'status' => 'integer',
             'flag' => 'integer',
         ];
+    }
+
+    /*
+    |----------------------------------------------------------------------
+    | Booted
+    |----------------------------------------------------------------------
+    */
+
+    protected static function booted()
+    {
+        static::saved(function ($model) {
+            SeoTaxonomyService::syncCity($model);
+        });
+
+        static::deleting(function ($model) {
+            SeoTaxonomyService::deleteCity($model->id);
+        });
     }
 
     /*

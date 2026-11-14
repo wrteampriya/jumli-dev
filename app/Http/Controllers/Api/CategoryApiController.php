@@ -200,6 +200,38 @@ class CategoryApiController extends BaseApiController
                 $applyListingStatus($parentCategory, $parentPackageMappings);
             }
 
+            // Attach multi-language slugs (fr + en) recursively onto categories
+            $attachSlugsRecursively = function ($categories) use (&$attachSlugsRecursively) {
+                foreach ($categories as $category) {
+                    $slugs = \App\Models\TaxonomySlug::where('entity_type', 'category')
+                        ->where('entity_id', $category->id)
+                        ->pluck('slug', 'locale')
+                        ->toArray();
+
+                    $category->slugs = [
+                        'en' => $slugs['en'] ?? $category->slug,
+                        'fr' => $slugs['fr'] ?? $category->slug,
+                    ];
+
+                    if ($category->relationLoaded('subcategories')) {
+                        $attachSlugsRecursively($category->subcategories);
+                    }
+                }
+            };
+
+            $attachSlugsRecursively($sql->getCollection());
+            if ($parentCategory !== null) {
+                $pSlugs = \App\Models\TaxonomySlug::where('entity_type', 'category')
+                    ->where('entity_id', $parentCategory->id)
+                    ->pluck('slug', 'locale')
+                    ->toArray();
+
+                $parentCategory->slugs = [
+                    'en' => $pSlugs['en'] ?? $parentCategory->slug,
+                    'fr' => $pSlugs['fr'] ?? $parentCategory->slug,
+                ];
+            }
+
             ResponseService::successResponse(null, $sql, ['self_category' => $parentCategory ?? null]);
 
         } catch (Throwable $th) {
