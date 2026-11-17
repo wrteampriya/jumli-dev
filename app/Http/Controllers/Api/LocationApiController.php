@@ -64,6 +64,12 @@ class LocationApiController extends BaseApiController
                     'city' => (bool) ($indexability->where('level', 'city')->first()->is_indexable ?? true),
                 ];
 
+                $country->slug = $country->seo_slug;
+                $country->slugs = [
+                    'fr' => $country->seo_slug,
+                    'en' => $country->seo_slug,
+                ];
+
                 return $country;
             });
 
@@ -99,17 +105,23 @@ class LocationApiController extends BaseApiController
 
             $states = $statesQuery->paginate($request->input('per_page', 15));
 
-            $states->getCollection()->transform(function ($state) {
-                $slugs = \App\Models\TaxonomySlug::where('entity_type', 'state')
-                    ->where('entity_id', $state->id)
-                    ->pluck('slug', 'locale')
-                    ->toArray();
+            $stateIds = $states->getCollection()->pluck('id');
+            $allStateSlugs = \App\Models\TaxonomySlug::where('entity_type', 'state')
+                ->whereIn('entity_id', $stateIds)
+                ->get()
+                ->groupBy('entity_id');
 
-                $state->slug = $slugs['fr'] ?? $slugs['en'] ?? \Illuminate\Support\Str::slug($state->name);
+            $states->getCollection()->transform(function ($state) use ($allStateSlugs) {
+                $slugMap = ($allStateSlugs->get($state->id) ?? collect())->pluck('slug', 'locale')->toArray();
+                $defaultSlug = $slugMap['fr'] ?? $slugMap['en'] ?? \Illuminate\Support\Str::slug($state->name);
+
+                $state->slug = $defaultSlug;
+                $state->seo_slug = $defaultSlug;
                 $state->slugs = [
-                    'fr' => $slugs['fr'] ?? \Illuminate\Support\Str::slug($state->name),
-                    'en' => $slugs['en'] ?? \Illuminate\Support\Str::slug($state->name),
+                    'fr' => $slugMap['fr'] ?? $defaultSlug,
+                    'en' => $slugMap['en'] ?? $defaultSlug,
                 ];
+
                 return $state;
             });
 
@@ -155,17 +167,23 @@ class LocationApiController extends BaseApiController
 
             $cities = $citiesQuery->paginate($request->input('per_page', 15));
 
-            $cities->getCollection()->transform(function ($city) {
-                $slugs = \App\Models\TaxonomySlug::where('entity_type', 'city')
-                    ->where('entity_id', $city->id)
-                    ->pluck('slug', 'locale')
-                    ->toArray();
+            $cityIds = $cities->getCollection()->pluck('id');
+            $allCitySlugs = \App\Models\TaxonomySlug::where('entity_type', 'city')
+                ->whereIn('entity_id', $cityIds)
+                ->get()
+                ->groupBy('entity_id');
 
-                $city->slug = $slugs['fr'] ?? $slugs['en'] ?? \Illuminate\Support\Str::slug($city->name);
+            $cities->getCollection()->transform(function ($city) use ($allCitySlugs) {
+                $slugMap = ($allCitySlugs->get($city->id) ?? collect())->pluck('slug', 'locale')->toArray();
+                $defaultSlug = $slugMap['fr'] ?? $slugMap['en'] ?? \Illuminate\Support\Str::slug($city->name);
+
+                $city->slug = $defaultSlug;
+                $city->seo_slug = $defaultSlug;
                 $city->slugs = [
-                    'fr' => $slugs['fr'] ?? \Illuminate\Support\Str::slug($city->name),
-                    'en' => $slugs['en'] ?? \Illuminate\Support\Str::slug($city->name),
+                    'fr' => $slugMap['fr'] ?? $defaultSlug,
+                    'en' => $slugMap['en'] ?? $defaultSlug,
                 ];
+
                 return $city;
             });
 

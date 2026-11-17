@@ -9,6 +9,7 @@ use App\Models\ItemCustomFieldValue;
 use App\Models\Package;
 use App\Models\PackageCategory;
 use App\Models\Setting;
+use \App\Models\TaxonomySlug;
 use App\Models\UserPurchasedPackage;
 use App\Services\ResponseService;
 use Illuminate\Http\Request;
@@ -209,9 +210,10 @@ class CategoryApiController extends BaseApiController
                         ->toArray();
 
                     $category->slugs = [
-                        'en' => $slugs['en'] ?? $category->slug,
                         'fr' => $slugs['fr'] ?? $category->slug,
+                        'en' => $slugs['en'] ?? $category->slug,
                     ];
+                    $category->seo_slug = $category->slugs['fr'] ?? $category->slug;
 
                     if ($category->relationLoaded('subcategories')) {
                         $attachSlugsRecursively($category->subcategories);
@@ -221,19 +223,19 @@ class CategoryApiController extends BaseApiController
 
             $attachSlugsRecursively($sql->getCollection());
             if ($parentCategory !== null) {
-                $pSlugs = \App\Models\TaxonomySlug::where('entity_type', 'category')
+                $pSlugs = TaxonomySlug::where('entity_type', 'category')
                     ->where('entity_id', $parentCategory->id)
                     ->pluck('slug', 'locale')
                     ->toArray();
 
                 $parentCategory->slugs = [
-                    'en' => $pSlugs['en'] ?? $parentCategory->slug,
                     'fr' => $pSlugs['fr'] ?? $parentCategory->slug,
+                    'en' => $pSlugs['en'] ?? $parentCategory->slug,
                 ];
+                $parentCategory->seo_slug = $parentCategory->slugs['fr'] ?? $parentCategory->slug;
             }
 
             ResponseService::successResponse(null, $sql, ['self_category' => $parentCategory ?? null]);
-
         } catch (Throwable $th) {
             ResponseService::logErrorResponse($th, 'API Controller -> getCategories');
             ResponseService::errorResponse();
@@ -257,14 +259,14 @@ class CategoryApiController extends BaseApiController
             $sql = Category::when($request->child_category_id, function ($sql) use ($request) {
                 $sql->where('categories.id', $request->child_category_id);
             })
-            ->when($request->slug, function ($sql) use ($request) {
-                $sql->where('slug', Str::lower($request->slug));
-            })
-            ->with('translations', 'seoDetail.translations')
-            ->firstOrFail()
-            ->ancestorsAndSelf()
-            ->breadthFirst()
-            ->get();
+                ->when($request->slug, function ($sql) use ($request) {
+                    $sql->where('slug', Str::lower($request->slug));
+                })
+                ->with('translations', 'seoDetail.translations')
+                ->firstOrFail()
+                ->ancestorsAndSelf()
+                ->breadthFirst()
+                ->get();
 
             if ($request->tree) {
                 $sql = $sql->toTree();
@@ -331,7 +333,7 @@ class CategoryApiController extends BaseApiController
             if ($filter === true) {
 
                 // Modify the collection with filtering
-                $customFields = $customFieldsQuery->clone()->whereNotIn('type',array('number','textbox','fileinput'))->get()->filter(function ($field) use ($categoryIds) {
+                $customFields = $customFieldsQuery->clone()->whereNotIn('type', array('number', 'textbox', 'fileinput'))->get()->filter(function ($field) use ($categoryIds) {
 
                     // Only filter for dropdown/checkbox/radio
                     if (! in_array($field->type, ['dropdown', 'checkbox', 'radio'])) {
@@ -400,7 +402,7 @@ class CategoryApiController extends BaseApiController
 
                     return true; // KEEP field
                 })->values(); // re-index collection
-            }else{
+            } else {
                 $customFields = $customFieldsQuery->clone()->get();
             }
 

@@ -6,11 +6,13 @@ use App\Models\Category;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\CountryLocationIndexability;
+use App\Models\Item;
 use App\Models\Language;
 use App\Models\SeoSlugRegistry;
 use App\Models\State;
 use App\Models\TaxonomySlug;
 use App\Models\Translation;
+use App\Services\SeoMetadataService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -371,19 +373,45 @@ class SeoTaxonomyService
             return ['status' => 404, 'error' => 'Unknown country'];
         }
 
+        $targetLangId = Language::where('code', $locale)->value('id');
+
+        $getLocalizedName = function ($model, string $defaultName) use ($targetLangId) {
+            if (!$targetLangId || !$model) {
+                return $defaultName;
+            }
+            $translated = Translation::where('translatable_type', get_class($model))
+                ->where('translatable_id', $model->id)
+                ->where('language_id', $targetLangId)
+                ->where('key', 'name')
+                ->value('value');
+            return $translated ?: $defaultName;
+        };
+
+        $countryName = $getLocalizedName($country, $country->name);
+        $countryData = [
+            'id' => $country->id,
+            'name' => $countryName,
+            'slug' => $country->seo_slug,
+            'slugs' => [
+                'fr' => $country->seo_slug,
+                'en' => $country->seo_slug,
+            ],
+            'currency' => $country->currency_code,
+        ];
+
         // If no further segments -> Country Page
         if (empty($segments)) {
+            $seoMetadata = SeoMetadataService::resolve('country', [
+                'country' => $countryData,
+            ], $locale);
+
             return [
                 'status' => 200,
                 'page_type' => 'country',
-                'country' => [
-                    'id' => $country->id,
-                    'name' => $country->name,
-                    'slug' => $country->seo_slug,
-                    'currency' => $country->currency_code,
-                ],
+                'country' => $countryData,
                 'location' => null,
                 'category_chain' => [],
+                'seo_metadata' => $seoMetadata,
             ];
         }
 
@@ -397,15 +425,53 @@ class SeoTaxonomyService
                 return ['status' => 404, 'error' => 'Invalid ad URL structure'];
             }
 
+            // Look up Ad in database
+            $item = Item::with('area.country')->where('slug', $adSlug)->first();
+            if (!$item) {
+                return ['status' => 404, 'error' => 'Ad not found'];
+            }
+
+            // Resolve ad's country
+            $adCountry = $item->area?->country;
+            if (!$adCountry && $item->country) {
+                $cName = $item->country;
+                $adCountry = Country::where('name', $cName)
+                    ->orWhere('name', str_replace('’', "'", $cName))
+                    ->orWhere('name', str_replace("'", '’', $cName))
+                    ->orWhereHas('translations', fn($t) => $t->where('key', 'name')->where('value', $cName))
+                    ->first();
+            }
+
+            $realCountrySlug = $adCountry?->seo_slug;
+
+            // If ad belongs to another country -> 301 Redirect to the real country
+            if ($realCountrySlug && $realCountrySlug !== $country->seo_slug) {
+                $targetPath = '/' . ($locale === 'en' ? 'en/' : '') . $realCountrySlug . '/' . ($locale === 'en' ? 'listing' : 'annonce') . '/' . $adSlug;
+                return [
+                    'status' => 301,
+                    'page_type' => 'ad_redirect',
+                    'real_country_slug' => $realCountrySlug,
+                    'ad_slug' => $adSlug,
+                    'target' => $targetPath,
+                ];
+            }
+
+            $seoMetadata = SeoMetadataService::resolve('ad', [
+                'country' => $countryData,
+                'location' => [
+                    'name' => $item->city ?? $item->area?->name ?? '',
+                ],
+                'ad_title' => $item->name,
+                'ad_description' => $item->description,
+            ], $locale);
+
             return [
                 'status' => 200,
                 'page_type' => 'ad',
-                'country' => [
-                    'id' => $country->id,
-                    'name' => $country->name,
-                    'slug' => $country->seo_slug,
-                ],
+                'country' => $countryData,
+                'ad_id' => $item->id,
                 'ad_slug' => $adSlug,
+                'seo_metadata' => $seoMetadata,
             ];
         }
 
@@ -435,11 +501,30 @@ class SeoTaxonomyService
                 return ['status' => 404, 'error' => 'Location level is not indexable'];
             }
 
+            $locModel = ($entry2->level == 1)
+                ? State::find($entry2->entity_id)
+                : City::find($entry2->entity_id);
+
+            $locType = ($entry2->level == 1) ? 'state' : 'city';
+            $locName = $getLocalizedName($locModel, $locModel?->name ?? $entry2->slug);
+
+            $locSlugs = TaxonomySlug::where('entity_type', $locType)
+                ->where('entity_id', $entry2->entity_id)
+                ->pluck('slug', 'locale')
+                ->toArray();
+
+            $locSlugs = [
+                'fr' => $locSlugs['fr'] ?? $entry2->slug,
+                'en' => $locSlugs['en'] ?? $entry2->slug,
+            ];
+
             $location = [
                 'id' => $entry2->entity_id,
                 'level' => $entry2->level,
                 'level_name' => $levelName,
+                'name' => $locName,
                 'slug' => $entry2->slug,
+                'slugs' => $locSlugs,
             ];
 
             // Remaining segments must be categories
@@ -447,17 +532,18 @@ class SeoTaxonomyService
 
             // If no categories -> Pure Location Page
             if (empty($categorySegments)) {
+                $seoMetadata = SeoMetadataService::resolve('location', [
+                    'country' => $countryData,
+                    'location' => $location,
+                ], $locale);
+
                 return [
                     'status' => 200,
                     'page_type' => 'location',
-                    'country' => [
-                        'id' => $country->id,
-                        'name' => $country->name,
-                        'slug' => $country->seo_slug,
-                        'currency' => $country->currency_code,
-                    ],
+                    'country' => $countryData,
                     'location' => $location,
                     'category_chain' => [],
+                    'seo_metadata' => $seoMetadata,
                 ];
             }
         } else {
@@ -490,11 +576,24 @@ class SeoTaxonomyService
                 return ['status' => 404, 'error' => "Category '{$catSlug}' is not a child of the previous category"];
             }
 
+            $catLocalizedName = $getLocalizedName($category, $category->name);
+
+            $catSlugs = TaxonomySlug::where('entity_type', 'category')
+                ->where('entity_id', $category->id)
+                ->pluck('slug', 'locale')
+                ->toArray();
+
+            $catSlugs = [
+                'fr' => $catSlugs['fr'] ?? $catEntry->slug,
+                'en' => $catSlugs['en'] ?? $category->slug,
+            ];
+
             $expectedParentId = $category->id;
             $categoryChain[] = [
                 'id' => $category->id,
                 'slug' => $catEntry->slug,
-                'name' => $category->name,
+                'slugs' => $catSlugs,
+                'name' => $catLocalizedName,
                 'depth' => $index + 1,
             ];
         }
@@ -504,19 +603,23 @@ class SeoTaxonomyService
         }
 
         $pageType = $location ? 'combination' : 'category';
+        $deepestCategory = end($categoryChain);
+
+        $seoMetadata = SeoMetadataService::resolve($pageType, [
+            'country' => $countryData,
+            'location' => $location,
+            'category' => $deepestCategory,
+            'category_chain' => $categoryChain,
+        ], $locale);
 
         return [
             'status' => 200,
             'page_type' => $pageType,
-            'country' => [
-                'id' => $country->id,
-                'name' => $country->name,
-                'slug' => $country->seo_slug,
-                'currency' => $country->currency_code,
-            ],
+            'country' => $countryData,
             'location' => $location,
-            'deepest_category_id' => end($categoryChain)['id'],
+            'deepest_category_id' => $deepestCategory['id'],
             'category_chain' => $categoryChain,
+            'seo_metadata' => $seoMetadata,
         ];
     }
 

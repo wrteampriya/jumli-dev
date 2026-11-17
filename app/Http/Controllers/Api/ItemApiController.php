@@ -7,6 +7,9 @@ use App\Support\DbCompat;
 use App\Http\Resources\ItemApiResource;
 use App\Models\Area;
 use App\Models\Category;
+use App\Models\City;
+use App\Models\Country;
+use App\Models\State;
 use App\Models\Favourite;
 use App\Models\FeaturedItems;
 use App\Models\FeatureSection;
@@ -365,7 +368,7 @@ class ItemApiController extends BaseApiController
                 'active'     => 'deactive',
                 'user_id'    => $user->id,
                 'package_id' => $selectedPackageId ?? null,
-                'expiry_date'=> $expiryDate,
+                'expiry_date' => $expiryDate,
                 'published_at' => $status === 'approved' ? Carbon::now() : null,
                 ...$pricingAttributes,
             ];
@@ -396,11 +399,11 @@ class ItemApiController extends BaseApiController
                     ];
                 }
                 // Insert in chunks of 10 to avoid large queries
-                if(!empty($galleryImages)){
+                if (!empty($galleryImages)) {
                     foreach (array_chunk($galleryImages, 10) as $chunk) {
                         ItemImages::insert($chunk);
                     }
-                }else{
+                } else {
                     ResponseService::validationError(__("Images are empty, need at least one image"));
                 }
             }
@@ -599,6 +602,9 @@ class ItemApiController extends BaseApiController
             'limit' => 'nullable|integer',
             'page' => 'nullable|integer',
             'category_id' => 'nullable|integer',
+            'country_id' => 'nullable|integer',
+            'state_id' => 'nullable|integer',
+            'city_id' => 'nullable|integer',
             'user_id' => 'nullable|integer',
             'min_price' => 'nullable|integer',
             /** Must be greater than or equal to min_price */
@@ -644,11 +650,11 @@ class ItemApiController extends BaseApiController
                 )->when($request->id, function ($query) use ($request) {
                     $query->where('id', $request->id);
                 })
-                ->when($request->slug, function ($query) use ($request) {
-                    $query->where('slug', Str::lower($request->slug));
-                })
-                ->getNonExpiredItems()
-                ->first();
+                    ->when($request->slug, function ($query) use ($request) {
+                        $query->where('slug', Str::lower($request->slug));
+                    })
+                    ->getNonExpiredItems()
+                    ->first();
 
                 if (! $item) {
                     ResponseService::errorResponse(__('No item Found'));
@@ -684,10 +690,10 @@ class ItemApiController extends BaseApiController
                 ->when($request->user_id, function ($query) use ($request) {
                     $query->where('user_id', $request->user_id);
                 })
-                ->when($request->excluded_item_id, function($query) use($request){
+                ->when($request->excluded_item_id, function ($query) use ($request) {
                     $query->where('id', '!=', $request->excluded_item_id);
                 })
-                ->when($request->search, function($query) use($request){
+                ->when($request->search, function ($query) use ($request) {
                     $query->search($request->search);
                 })
                 ->when($request->min_price, function ($query) use ($request) {
@@ -714,8 +720,8 @@ class ItemApiController extends BaseApiController
 
                     return $query->whereIn('category_id', $categoryIDS);
                 })
-                ->when($request->posted_since, function($query) use($request){
-                    $this->itemListPostedSinceFilter($query,$request->posted_since);
+                ->when($request->posted_since, function ($query) use ($request) {
+                    $this->itemListPostedSinceFilter($query, $request->posted_since);
                 })
                 ->when($request->custom_fields, function ($query) use ($request) {
                     $customFields = json_decode($request->custom_fields, true) ?? [];
@@ -736,13 +742,63 @@ class ItemApiController extends BaseApiController
                     $categoryIDS = $category ? $category->descendantsAndSelf()->pluck('id')->toArray() : [$request->category_id];
 
                     return $sql->whereIn('category_id', $categoryIDS);
+                })
+                ->when($request->city_id, function ($query) use ($request) {
+                    $city = City::with('translations')->find($request->city_id);
+                    if ($city) {
+                        $names = array_unique(array_filter([
+                            $city->name,
+                            ...($city->translations->pluck('value')->all() ?? [])
+                        ]));
+                        $query->where(function ($q) use ($names, $request) {
+                            $q->whereIn('city', $names)
+                                ->orWhereHas('area', fn($a) => $a->where('city_id', $request->city_id));
+                        });
+                    } else {
+                        $query->whereHas('area', fn($a) => $a->where('city_id', $request->city_id));
+                    }
+                })
+                ->when($request->state_id, function ($query) use ($request) {
+                    $state = State::with('translations')->find($request->state_id);
+                    if ($state) {
+                        $names = array_unique(array_filter([
+                            $state->name,
+                            ...($state->translations->pluck('value')->all() ?? [])
+                        ]));
+                        $query->where(function ($q) use ($names, $request) {
+                            $q->whereIn('state', $names)
+                                ->orWhereHas('area', fn($a) => $a->where('state_id', $request->state_id));
+                        });
+                    } else {
+                        $query->whereHas('area', fn($a) => $a->where('state_id', $request->state_id));
+                    }
+                })
+                ->when($request->country_id, function ($query) use ($request) {
+                    $country = Country::with('translations')->find($request->country_id);
+                    if ($country) {
+                        $names = array_unique(array_filter([
+                            $country->name,
+                            str_replace('’', "'", $country->name),
+                            str_replace("'", '’', $country->name),
+                            ...($country->translations->pluck('value')->all() ?? [])
+                        ]));
+                        $query->where(function ($q) use ($country, $names, $request) {
+                            $q->whereIn('country', $names);
+                            if ($country->iso2) {
+                                $q->orWhere('country_code', $country->iso2);
+                            }
+                            $q->orWhereHas('area', fn($a) => $a->where('country_id', $request->country_id));
+                        });
+                    } else {
+                        $query->whereHas('area', fn($a) => $a->where('country_id', $request->country_id));
+                    }
                 });
 
             [$baseQuery, $featureSectionSort] = $this->itemListFeatureSectionFilter($baseQuery, $request);
 
             $locationMessage = null;
             if (($request->latitude !== null && $request->longitude !== null) || $request->country || $request->state || $request->city || $request->area) {
-                $locationResult = HelperService::applyLocationFilters($baseQuery, $request, fn ($query) => $query);
+                $locationResult = HelperService::applyLocationFilters($baseQuery, $request, fn($query) => $query);
                 $baseQuery = $locationResult['query'];
                 $locationMessage = $locationResult['message'];
             }
@@ -765,8 +821,8 @@ class ItemApiController extends BaseApiController
 
             $featuredPerPage = (int) round($limit * $weightage / 100);
 
-            $featuredQuery = (clone $baseQuery)->whereHas('featured_items', fn ($q) => $q->onlyActive());
-            $normalQuery = (clone $baseQuery)->whereDoesntHave('featured_items', fn ($q) => $q->onlyActive());
+            $featuredQuery = (clone $baseQuery)->whereHas('featured_items', fn($q) => $q->onlyActive());
+            $normalQuery = (clone $baseQuery)->whereDoesntHave('featured_items', fn($q) => $q->onlyActive());
 
             if ($request->sort_by) {
                 $this->itemListSortFilter($featuredQuery, $request->sort_by);
@@ -955,13 +1011,13 @@ class ItemApiController extends BaseApiController
                     'review',
                     'item_custom_field_values.custom_field.translations'
                 )->where('user_id', $user->id)
-                ->when($request->id, function ($query) use ($request) {
-                    $query->where('id', $request->id);
-                })
-                ->when($request->slug, function ($query) use ($request) {
-                    $query->where('slug', Str::lower($request->slug));
-                })
-                ->first();
+                    ->when($request->id, function ($query) use ($request) {
+                        $query->where('id', $request->id);
+                    })
+                    ->when($request->slug, function ($query) use ($request) {
+                        $query->where('slug', Str::lower($request->slug));
+                    })
+                    ->first();
 
                 if (! $item) {
                     ResponseService::errorResponse(__('No item Found'));
@@ -992,7 +1048,7 @@ class ItemApiController extends BaseApiController
                         $sql->whereNotNull('expiry_date')
                             ->where('expiry_date', '<', Carbon::now())->whereNull('deleted_at')
                             ->where('status', '!=', 'sold out');
-                    } elseif($request->status == 'sold out') {
+                    } elseif ($request->status == 'sold out') {
                         $sql->where('status', 'sold out');
                     }
                 });
@@ -1044,9 +1100,9 @@ class ItemApiController extends BaseApiController
                     $q->where('buyer_id', $user->id);
                 }
             ])
-            ->where('sold_to', $user->id)
-            ->where('status', 'sold out')
-            ->where('user_id', '!=', $user->id);
+                ->where('sold_to', $user->id)
+                ->where('status', 'sold out')
+                ->where('user_id', '!=', $user->id);
 
             if ($request->filled('search')) {
                 $query->search($request->search);
@@ -1180,7 +1236,7 @@ class ItemApiController extends BaseApiController
             $auto_approve_item = Setting::where('name', 'auto_approve_edited_item')->value('value') ?? 0;
             if ($auto_approve_item == 1) {
                 $status = 'approved';
-            } else if ($item->status == 'soft rejected'){
+            } else if ($item->status == 'soft rejected') {
                 $status = 'resubmitted';
             } else {
                 $status = 'review';
@@ -1494,8 +1550,8 @@ class ItemApiController extends BaseApiController
             } elseif ($request->status == 'active') {
                 $item->restore();
             } elseif ($request->status == 'sold out') {
-                if($request->sold_to){
-                    $userExists = User::where('id',$request->sold_to)->exists();
+                if ($request->sold_to) {
+                    $userExists = User::where('id', $request->sold_to)->exists();
                     if (!$userExists) {
                         ResponseService::errorResponse(__('Invalid User'));
                     }
@@ -1548,8 +1604,10 @@ class ItemApiController extends BaseApiController
             DB::beginTransaction();
             $freeAdListingStatus = Setting::where('name', 'free_ad_listing')->value('value') ?? 0;
             // A module with Ad Packages switched off renews freely, same as free_ad_listing
-            if ($request->filled('item_id')
-                && ! ModuleService::setting(ModuleService::moduleIdForItem((int) $request->item_id), 'ad_packages_enabled')) {
+            if (
+                $request->filled('item_id')
+                && ! ModuleService::setting(ModuleService::moduleIdForItem((int) $request->item_id), 'ad_packages_enabled')
+            ) {
                 $freeAdListingStatus = 1;
             }
 
@@ -1594,7 +1652,7 @@ class ItemApiController extends BaseApiController
             if (Carbon::parse($item->expiry_date)->gt($currentDate)) {
                 ResponseService::validationError(__('Advertisement has not expired yet, so it cannot be renewed'));
             }
-            if($item->getRawOriginal('status') == 'sold out'){
+            if ($item->getRawOriginal('status') == 'sold out') {
                 ResponseService::validationError(__('Advertisement is sold out, so it cannot be renewed'));
             }
             if ($package) {
@@ -1607,7 +1665,7 @@ class ItemApiController extends BaseApiController
                 $expiryDate = HelperService::calculateItemExpiryDate(null, null);
             }
 
-            if($item->getRawOriginal('status') == 'approved'){
+            if ($item->getRawOriginal('status') == 'approved') {
                 $item->published_at = $currentDate;
             }
             $item->expiry_date = $expiryDate;
@@ -1639,7 +1697,7 @@ class ItemApiController extends BaseApiController
             if (!$item) {
                 return ResponseService::errorResponse(__('Advertisement not found'));
             }
-            if($item->status != 'approved'){
+            if ($item->status != 'approved') {
                 return ResponseService::errorResponse(__('Advertisement is not approved'));
             }
             $user = Auth::user();
@@ -1751,7 +1809,7 @@ class ItemApiController extends BaseApiController
                 ->paginate(500);
 
             // The item's module comes from its category.
-            $items->through(fn (Item $item) => [
+            $items->through(fn(Item $item) => [
                 'id' => $item->id,
                 'slug' => $item->slug,
                 'module_slug' => $item->category?->module?->slug,
@@ -1773,8 +1831,9 @@ class ItemApiController extends BaseApiController
     /**
      * Get Item Status
      */
-    public function getItemStatus(Request $request){
-        try{
+    public function getItemStatus(Request $request)
+    {
+        try {
             $validator = Validator::make($request->all(), [
                 'item_id' => 'required|exists:items,id',
             ]);
@@ -1789,7 +1848,7 @@ class ItemApiController extends BaseApiController
                 'status' => $item->status,
             );
             ResponseService::successResponse(__('Data Fetched Successfully'), $data);
-        } catch(Throwable $th){
+        } catch (Throwable $th) {
             ResponseService::logErrorResponse($th, 'API Controller -> getItemStatus');
             ResponseService::errorResponse();
         }
@@ -1820,12 +1879,12 @@ class ItemApiController extends BaseApiController
             return;
         }
 
-        if($request->input('video_link')){
+        if ($request->input('video_link')) {
             ItemVideo::updateOrCreate(
                 ['item_id' => $item->id],
                 ['video_type' => $videoType, 'video_link' => $request->input('video_link'), 'video_file' => null]
             );
-        }else{
+        } else {
             return;
         }
     }
@@ -1868,12 +1927,12 @@ class ItemApiController extends BaseApiController
                 ResponseService::validationError($moduleError);
             }
 
-            $itemQuery = Item::where(['id' => $request->item_id, 'user_id' => Auth::id()])->select('id','item_type');
+            $itemQuery = Item::where(['id' => $request->item_id, 'user_id' => Auth::id()])->select('id', 'item_type');
             $reelTypeItem = $itemQuery->clone()->where('item_type', 'reel')->with('reel')->first();
 
             // Package check applies when uploading reel video
             if ($request->hasFile('video')) {
-                if(collect($reelTypeItem)->isEmpty()){
+                if (collect($reelTypeItem)->isEmpty()) {
                     ResponseService::errorResponse(__('Item not found'));
                 }
 
@@ -1886,7 +1945,7 @@ class ItemApiController extends BaseApiController
                         ->where(function ($q) {
                             $q->whereDate('end_date', '>', date('Y-m-d'))->orWhereNull('end_date');
                         })
-                        ->whereHas('package', fn ($q) => $q->where('type', 'item_listing')->where('is_reel_allowed', 1)->forModule($moduleId))
+                        ->whereHas('package', fn($q) => $q->where('type', 'item_listing')->where('is_reel_allowed', 1)->forModule($moduleId))
                         ->exists();
 
                     if (!$hasReelPackage) {
@@ -1901,7 +1960,7 @@ class ItemApiController extends BaseApiController
             // Handle reel video — replace if exists
             if ($request->hasFile('video')) {
                 // If thumbnail is not in request along with video then show error
-                if(!$request->hasFile('thumbnail')){
+                if (!$request->hasFile('thumbnail')) {
                     ResponseService::errorResponse(__('Please upload a thumbnail along with the reel video.'));
                 }
                 if ($reel && $reel->getRawOriginal('video')) {
@@ -1930,7 +1989,7 @@ class ItemApiController extends BaseApiController
             $normalItem = $itemQuery->clone()->with('itemVideo')->first();
             // Handle product video — stored in item_videos table, replace file if exists
             if ($request->hasFile('product_video')) {
-                if(collect($normalItem)->isEmpty()){
+                if (collect($normalItem)->isEmpty()) {
                     ResponseService::errorResponse(__('Item not found'));
                 }
                 $existingItemVideo = $normalItem->itemVideo;
@@ -1961,11 +2020,11 @@ class ItemApiController extends BaseApiController
     private function itemListFeatureSectionFilter($baseQuery, Request $request): array
     {
 
-        if($request->has('featured_section_id') && !empty($request->featured_section_id)){
+        if ($request->has('featured_section_id') && !empty($request->featured_section_id)) {
             $where = ['id' => $request->featured_section_id];
-        }else if ($request->has('featured_section_slug') && !empty($request->featured_section_slug)){
+        } else if ($request->has('featured_section_slug') && !empty($request->featured_section_slug)) {
             $where = ['slug' => $request->featured_section_slug];
-        }else {
+        } else {
             return [$baseQuery, null];
         }
 
@@ -1993,27 +2052,27 @@ class ItemApiController extends BaseApiController
                 : (function () use ($featuredSection, $baseQuery) {
                     $rootIds = array_filter(explode(',', $featuredSection->value ?? ''));
                     $categoryIDS = Category::whereIn('id', $rootIds)->get()
-                        ->flatMap(fn ($c) => $c->descendantsAndSelf()->pluck('id'))
+                        ->flatMap(fn($c) => $c->descendantsAndSelf()->pluck('id'))
                         ->unique()->values()->toArray();
 
                     return $baseQuery->whereIn('category_id', $categoryIDS);
                 })(),
-            'featured_ads' => $baseQuery->whereHas('featured_items', fn ($q) => $q->onlyActive()),
+            'featured_ads' => $baseQuery->whereHas('featured_items', fn($q) => $q->onlyActive()),
             'item_selection' => $baseQuery->whereIn('items.id', DbCompat::idList($featuredSection->value ?? '')),
             default => $baseQuery,
         };
 
         // Promotion Package Tier (Most Viewed / Most Liked): featured or standard listings only.
         if ($featuredSection->promotion_tier === 'featured') {
-            $baseQuery->whereHas('featured_items', fn ($q) => $q->onlyActive());
+            $baseQuery->whereHas('featured_items', fn($q) => $q->onlyActive());
         } elseif ($featuredSection->promotion_tier === 'standard') {
-            $baseQuery->whereDoesntHave('featured_items', fn ($q) => $q->onlyActive());
+            $baseQuery->whereDoesntHave('featured_items', fn($q) => $q->onlyActive());
         }
 
         // Category Filter Scope of the other rules (ids in `value`), unless the user picked a category.
         if (! in_array($featuredSection->filter, ['category_criteria', 'item_selection']) && filled($featuredSection->value) && ! $hasUserCategoryFilter) {
             $scopeIds = Category::whereIn('id', explode(',', $featuredSection->value))->get()
-                ->flatMap(fn ($c) => $c->descendantsAndSelf()->pluck('id'))->unique()->values()->toArray();
+                ->flatMap(fn($c) => $c->descendantsAndSelf()->pluck('id'))->unique()->values()->toArray();
             $baseQuery->whereIn('category_id', $scopeIds);
         }
 
@@ -2029,7 +2088,8 @@ class ItemApiController extends BaseApiController
         return [$baseQuery, $featureSectionSort];
     }
 
-    private function itemListSortFilter($query,$sortBy){
+    private function itemListSortFilter($query, $sortBy)
+    {
 
         switch ($sortBy) {
             case 'popular_items':
@@ -2053,7 +2113,8 @@ class ItemApiController extends BaseApiController
         }
     }
 
-    private function itemListPostedSinceFilter($query, $postedSince){
+    private function itemListPostedSinceFilter($query, $postedSince)
+    {
         $now = Carbon::now();
         switch ($postedSince) {
             case 'all-time':

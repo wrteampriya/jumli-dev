@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\PaymentApiController;
 use App\Http\Controllers\Api\ReferralApiController;
 use App\Http\Controllers\Api\ReviewApiController;
 use App\Http\Controllers\Api\SearchApiController;
+use App\Http\Controllers\Api\SeoMetadataApiController;
 use App\Http\Controllers\Api\SettingsApiController;
 use App\Http\Controllers\Api\SocialApiController;
 use App\Http\Controllers\Api\UserApiController;
@@ -207,6 +208,13 @@ Route::get('resolve-slug', [LocationApiController::class, 'resolveSlug']);
 Route::post('seo/resolve-path', [LocationApiController::class, 'resolveSeoPath']);
 Route::get('seo/combination-listings', [LocationApiController::class, 'getCombinationListings']);
 Route::get('seo/resolve-redirect', [LocationApiController::class, 'resolveRedirect']);
+
+/* SEO Metadata Engine (WP4) */
+Route::get('seo/metadata/templates', [SeoMetadataApiController::class, 'getTemplates']);
+Route::post('seo/metadata/templates', [SeoMetadataApiController::class, 'saveTemplate']);
+Route::get('seo/metadata/entities', [SeoMetadataApiController::class, 'getEntityOverrides']);
+Route::post('seo/metadata/entities', [SeoMetadataApiController::class, 'saveEntityOverride']);
+Route::post('seo/metadata/preview', [SeoMetadataApiController::class, 'preview']);
 Route::get('countries', [LocationApiController::class, 'getCountries']);
 Route::get('states', [LocationApiController::class, 'getStates']);
 Route::get('cities', [LocationApiController::class, 'getCities']);
