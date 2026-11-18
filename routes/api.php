@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\ReferralApiController;
 use App\Http\Controllers\Api\ReviewApiController;
 use App\Http\Controllers\Api\SearchApiController;
 use App\Http\Controllers\Api\SeoMetadataApiController;
+use App\Http\Controllers\Api\SeoSitemapApiController;
 use App\Http\Controllers\Api\SettingsApiController;
 use App\Http\Controllers\Api\SocialApiController;
 use App\Http\Controllers\Api\UserApiController;
@@ -215,6 +216,11 @@ Route::post('seo/metadata/templates', [SeoMetadataApiController::class, 'saveTem
 Route::get('seo/metadata/entities', [SeoMetadataApiController::class, 'getEntityOverrides']);
 Route::post('seo/metadata/entities', [SeoMetadataApiController::class, 'saveEntityOverride']);
 Route::post('seo/metadata/preview', [SeoMetadataApiController::class, 'preview']);
+
+/* SEO Sitemap Engine (WP5) */
+Route::get('seo/sitemaps/status', [SeoSitemapApiController::class, 'getStatus']);
+Route::post('seo/sitemaps/thresholds', [SeoSitemapApiController::class, 'updateThresholds']);
+Route::post('seo/sitemaps/rebuild', [SeoSitemapApiController::class, 'rebuild']);
 Route::get('countries', [LocationApiController::class, 'getCountries']);
 Route::get('states', [LocationApiController::class, 'getStates']);
 Route::get('cities', [LocationApiController::class, 'getCities']);

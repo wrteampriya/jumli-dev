@@ -37,6 +37,12 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping(30) // skip this run if the previous one is still going after 30 min (should take seconds)
             ->runInBackground();     // don't block schedule:run / other due tasks while it executes
 
+        // Daily SEO Sitemap Regeneration & Stats Refresh (WP5)
+        $schedule->command('seo:sitemap:build --with-stats')
+            ->dailyAt('02:00')
+            ->withoutOverlapping(60)
+            ->runInBackground();
+
     }
 
     /**
